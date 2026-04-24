@@ -1,0 +1,344 @@
+-- ASTRA CORE V4.1
+-- Último cambio: botón circular y panel movibles (drag móvil + PC)
+-- LocalScript en StarterGui
+
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+
+pcall(function()
+	player.PlayerGui.AstraCore:Destroy()
+end)
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "AstraCore"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-------------------------------------------------
+-- FUNCIÓN DRAG (móvil + PC)
+-------------------------------------------------
+local function MakeDraggable(frame, handle)
+	handle = handle or frame
+
+	local dragging = false
+	local dragInput
+	local dragStart
+	local startPos
+
+	local function update(input)
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+
+	handle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+			
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	handle.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UIS.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
+end
+
+-------------------------------------------------
+-- BOTÓN CIRCULAR
+-------------------------------------------------
+local orb = Instance.new("TextButton")
+orb.Parent = gui
+orb.Size = UDim2.new(0,72,0,72)
+orb.Position = UDim2.new(0,15,0.5,-36)
+orb.Text = "✦"
+orb.Font = Enum.Font.GothamBold
+orb.TextSize = 34
+orb.TextColor3 = Color3.new(1,1,1)
+orb.BackgroundColor3 = Color3.fromRGB(255,105,180)
+orb.BorderSizePixel = 0
+Instance.new("UICorner",orb).CornerRadius = UDim.new(1,0)
+
+-------------------------------------------------
+-- PANEL
+-------------------------------------------------
+local main = Instance.new("Frame")
+main.Parent = gui
+main.Size = UDim2.new(0,430,0,540)
+main.Position = UDim2.new(0,100,0.5,-270)
+main.BackgroundColor3 = Color3.fromRGB(28,18,28)
+main.Visible = false
+main.BorderSizePixel = 0
+Instance.new("UICorner",main).CornerRadius = UDim.new(0,18)
+
+local top = Instance.new("Frame")
+top.Parent = main
+top.Size = UDim2.new(1,0,0,55)
+top.BackgroundColor3 = Color3.fromRGB(255,120,190)
+top.BorderSizePixel = 0
+Instance.new("UICorner",top).CornerRadius = UDim.new(0,18)
+
+local fill = Instance.new("Frame")
+fill.Parent = top
+fill.Size = UDim2.new(1,0,0,18)
+fill.Position = UDim2.new(0,0,1,-18)
+fill.BackgroundColor3 = Color3.fromRGB(255,120,190)
+fill.BorderSizePixel = 0
+
+local title = Instance.new("TextLabel")
+title.Parent = top
+title.Size = UDim2.new(1,-20,1,0)
+title.Position = UDim2.new(0,15,0,0)
+title.BackgroundTransparency = 1
+title.Text = "✦ ASTRA CORE V4.1"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+title.TextColor3 = Color3.new(1,1,1)
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+local status = Instance.new("TextLabel")
+status.Parent = main
+status.Size = UDim2.new(1,-20,0,24)
+status.Position = UDim2.new(0,10,0,62)
+status.BackgroundTransparency = 1
+status.Text = "Estado: Lista para ayudarte."
+status.Font = Enum.Font.Gotham
+status.TextSize = 14
+status.TextColor3 = Color3.fromRGB(255,230,245)
+status.TextXAlignment = Enum.TextXAlignment.Left
+
+-------------------------------------------------
+-- SCROLL
+-------------------------------------------------
+local scroll = Instance.new("ScrollingFrame")
+scroll.Parent = main
+scroll.Size = UDim2.new(1,-20,1,-98)
+scroll.Position = UDim2.new(0,10,0,92)
+scroll.CanvasSize = UDim2.new(0,0,0,1150)
+scroll.ScrollBarThickness = 6
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+
+local grid = Instance.new("UIGridLayout")
+grid.Parent = scroll
+grid.CellSize = UDim2.new(0,190,0,54)
+grid.CellPadding = UDim2.new(0,10,0,10)
+
+-------------------------------------------------
+-- CREAR BOTONES
+-------------------------------------------------
+local function NewButton(txt)
+	local b = Instance.new("TextButton")
+	b.Parent = scroll
+	b.Size = UDim2.new(0,190,0,54)
+	b.Text = txt
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 15
+	b.TextColor3 = Color3.new(1,1,1)
+	b.BackgroundColor3 = Color3.fromRGB(55,35,55)
+	b.BorderSizePixel = 0
+	Instance.new("UICorner",b).CornerRadius = UDim.new(0,12)
+	return b
+end
+
+local speed = NewButton("⚡ WalkSpeed")
+local jump = NewButton("🦘 Super Jump")
+local sprint = NewButton("🏃 Sprint")
+local fly = NewButton("🕊 Fly ON/OFF")
+local heal = NewButton("❤ Heal")
+local reset = NewButton("☠ Reset")
+local gravity = NewButton("🌍 Low Gravity")
+local normal = NewButton("🔄 Normalizar")
+local day = NewButton("☀ Día")
+local night = NewButton("🌙 Noche")
+local tpTouch = NewButton("📍 TP Touch")
+local tpForward = NewButton("➡ TP Adelante")
+local tpSky = NewButton("☁ TP Sky")
+local tpRandom = NewButton("🎲 TP Random")
+local sit = NewButton("🪑 Sentarse")
+local unsit = NewButton("⬆ Levantarse")
+local msg = NewButton("💗 Mensaje")
+
+-------------------------------------------------
+-- FUNCIONES BASE
+-------------------------------------------------
+local function getChar()
+	return player.Character or player.CharacterAdded:Wait()
+end
+
+local function getHum()
+	return getChar():FindFirstChildOfClass("Humanoid")
+end
+
+local function getRoot()
+	return getChar():FindFirstChild("HumanoidRootPart")
+end
+
+-------------------------------------------------
+-- FLY
+-------------------------------------------------
+local flying = false
+local flyConn
+
+local function stopFly()
+	flying = false
+	if flyConn then flyConn:Disconnect() end
+	status.Text = "Estado: Vuelo desactivado."
+end
+
+local function startFly()
+	local root = getRoot()
+	flying = true
+
+	flyConn = RunService.RenderStepped:Connect(function()
+		if not flying then return end
+
+		local cam = workspace.CurrentCamera
+		local move = Vector3.zero
+
+		if UIS:IsKeyDown(Enum.KeyCode.W) then move += cam.CFrame.LookVector end
+		if UIS:IsKeyDown(Enum.KeyCode.S) then move -= cam.CFrame.LookVector end
+		if UIS:IsKeyDown(Enum.KeyCode.A) then move -= cam.CFrame.RightVector end
+		if UIS:IsKeyDown(Enum.KeyCode.D) then move += cam.CFrame.RightVector end
+
+		if move.Magnitude > 0 then
+			root.Velocity = move.Unit * 70
+		else
+			root.Velocity = Vector3.zero
+		end
+	end)
+
+	status.Text = "Estado: Vuelo activado."
+end
+
+-------------------------------------------------
+-- TOUCH TP
+-------------------------------------------------
+local mouse = player:GetMouse()
+local touchTP = false
+
+mouse.Button1Down:Connect(function()
+	if not touchTP then return end
+
+	local target = mouse.Target
+	if target and target:IsA("BasePart") then
+		local pos = mouse.Hit.Position
+		getRoot().CFrame = CFrame.new(pos + Vector3.new(0,5,0))
+		status.Text = "Estado: Teletransportado."
+	end
+end)
+
+-------------------------------------------------
+-- BOTONES
+-------------------------------------------------
+speed.MouseButton1Click:Connect(function()
+	getHum().WalkSpeed = 35
+end)
+
+jump.MouseButton1Click:Connect(function()
+	getHum().JumpPower = 120
+end)
+
+sprint.MouseButton1Click:Connect(function()
+	getHum().WalkSpeed = 50
+end)
+
+fly.MouseButton1Click:Connect(function()
+	if flying then stopFly() else startFly() end
+end)
+
+heal.MouseButton1Click:Connect(function()
+	getHum().Health = getHum().MaxHealth
+end)
+
+reset.MouseButton1Click:Connect(function()
+	getHum().Health = 0
+end)
+
+gravity.MouseButton1Click:Connect(function()
+	workspace.Gravity = 80
+end)
+
+normal.MouseButton1Click:Connect(function()
+	getHum().WalkSpeed = 16
+	getHum().JumpPower = 50
+	workspace.Gravity = 196.2
+	stopFly()
+	touchTP = false
+end)
+
+day.MouseButton1Click:Connect(function()
+	Lighting.ClockTime = 14
+end)
+
+night.MouseButton1Click:Connect(function()
+	Lighting.ClockTime = 0
+end)
+
+tpTouch.MouseButton1Click:Connect(function()
+	touchTP = not touchTP
+	status.Text = touchTP and "Estado: Tocá una superficie." or "Estado: TP Touch OFF."
+end)
+
+tpForward.MouseButton1Click:Connect(function()
+	local root = getRoot()
+	root.CFrame = root.CFrame + root.CFrame.LookVector * 20
+end)
+
+tpSky.MouseButton1Click:Connect(function()
+	local r = getRoot()
+	r.CFrame = CFrame.new(r.Position.X,150,r.Position.Z)
+end)
+
+tpRandom.MouseButton1Click:Connect(function()
+	getRoot().CFrame = CFrame.new(math.random(-100,100),20,math.random(-100,100))
+end)
+
+sit.MouseButton1Click:Connect(function()
+	getHum().Sit = true
+end)
+
+unsit.MouseButton1Click:Connect(function()
+	getHum().Sit = false
+end)
+
+msg.MouseButton1Click:Connect(function()
+	status.Text = "AstraCore: Siempre contigo ✦"
+end)
+
+-------------------------------------------------
+-- ABRIR/CERRAR
+-------------------------------------------------
+orb.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
+	orb.Text = main.Visible and "✕" or "✦"
+end)
+
+-------------------------------------------------
+-- ACTIVAR DRAG
+-------------------------------------------------
+MakeDraggable(orb)
+MakeDraggable(main, top)
