@@ -1,0 +1,958 @@
+-- ASTRA CORE V6 COMPLETE+
+-- Mejorado por ChatGPT
+-- LocalScript en StarterGui
+
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local VirtualUser = game:GetService("VirtualUser")
+
+-------------------------------------------------
+-- GUI
+-------------------------------------------------
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "AstraCoreV6"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local orb = Instance.new("TextButton")
+orb.Parent = gui
+orb.Size = UDim2.new(0,70,0,70)
+orb.Position = UDim2.new(0,20,0.5,-35)
+orb.Text = "✦"
+orb.TextScaled = true
+orb.Font = Enum.Font.GothamBold
+orb.BackgroundColor3 = Color3.fromRGB(255,105,180)
+orb.TextColor3 = Color3.new(1,1,1)
+orb.BorderSizePixel = 0
+Instance.new("UICorner",orb).CornerRadius = UDim.new(1,0)
+
+local main = Instance.new("Frame")
+main.Parent = gui
+main.Size = UDim2.new(0,430,0,540)
+main.Position = UDim2.new(0,105,0.5,-270)
+main.BackgroundColor3 = Color3.fromRGB(35,20,35)
+main.Visible = false
+main.BorderSizePixel = 0
+Instance.new("UICorner",main).CornerRadius = UDim.new(0,16)
+
+local top = Instance.new("Frame")
+top.Parent = main
+top.Size = UDim2.new(1,0,0,55)
+top.BackgroundColor3 = Color3.fromRGB(255,120,190)
+top.BorderSizePixel = 0
+Instance.new("UICorner",top).CornerRadius = UDim.new(0,16)
+
+local title = Instance.new("TextLabel")
+title.Parent = top
+title.Size = UDim2.new(1,0,1,0)
+title.BackgroundTransparency = 1
+title.Text = "✦ ASTRA CORE V6+"
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 24
+
+local status = Instance.new("TextLabel")
+status.Parent = main
+status.Size = UDim2.new(1,-20,0,25)
+status.Position = UDim2.new(0,10,0,62)
+status.BackgroundTransparency = 1
+status.Text = "Estado: Lista."
+status.TextColor3 = Color3.new(1,1,1)
+status.Font = Enum.Font.Gotham
+status.TextSize = 14
+status.TextXAlignment = Enum.TextXAlignment.Left
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Parent = main
+scroll.Size = UDim2.new(1,-20,1,-100)
+scroll.Position = UDim2.new(0,10,0,92)
+scroll.CanvasSize = UDim2.new(0,0,0,2200)
+scroll.ScrollBarThickness = 6
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+
+local grid = Instance.new("UIGridLayout")
+grid.Parent = scroll
+grid.CellSize = UDim2.new(0,190,0,54)
+grid.CellPadding = UDim2.new(0,10,0,10)
+
+-------------------------------------------------
+-- DRAG
+-------------------------------------------------
+
+local function Dragify(frame, handle)
+	handle = handle or frame
+	local drag = false
+	local dragInput
+	local dragStart
+	local startPos
+
+	handle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+			drag = true
+			dragStart = input.Position
+			startPos = frame.Position
+		end
+	end)
+
+	handle.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+			drag = false
+		end
+	end)
+
+	handle.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UIS.InputChanged:Connect(function(input)
+		if drag and input == dragInput then
+			local delta = input.Position - dragStart
+			frame.Position = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+end
+
+Dragify(orb)
+Dragify(main, top)
+
+-------------------------------------------------
+-- HELPERS
+-------------------------------------------------
+
+local function getChar()
+	return player.Character or player.CharacterAdded:Wait()
+end
+
+local function getHum()
+	return getChar():WaitForChild("Humanoid")
+end
+
+local function getRoot()
+	return getChar():WaitForChild("HumanoidRootPart")
+end
+
+local saved = {
+	WalkSpeed = 16,
+	JumpPower = 50,
+	Gravity = 196.2
+}
+
+local function applySaved()
+	local hum = getHum()
+	hum.WalkSpeed = saved.WalkSpeed
+	hum.JumpPower = saved.JumpPower
+	workspace.Gravity = saved.Gravity
+end
+
+player.CharacterAdded:Connect(function()
+	task.wait(.5)
+	applySaved()
+end)
+
+-------------------------------------------------
+-- BOTONES
+-------------------------------------------------
+
+local function Btn(txt)
+	local b = Instance.new("TextButton")
+	b.Parent = scroll
+	b.Text = txt
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 15
+	b.TextColor3 = Color3.new(1,1,1)
+	b.BackgroundColor3 = Color3.fromRGB(60,35,60)
+	b.BorderSizePixel = 0
+	Instance.new("UICorner",b).CornerRadius = UDim.new(0,12)
+	return b
+end
+
+local speed = Btn("⚡ WalkSpeed")
+local jump = Btn("🦘 Super Jump")
+local sprint = Btn("🏃 Sprint")
+local fly = Btn("🕊 Fly")
+local heal = Btn("❤ Heal")
+local reset = Btn("☠ Reset")
+local gravity = Btn("🌍 Low Gravity")
+local normal = Btn("🔄 Normal")
+local day = Btn("☀ Día")
+local night = Btn("🌙 Noche")
+local tpTouch = Btn("📍 TP Touch")
+local tpFront = Btn("➡ TP Adelante")
+local tpSky = Btn("☁ TP Sky")
+local sit = Btn("🪑 Sentarse")
+local stand = Btn("⬆ Levantarse")
+
+-- NUEVOS
+local slowmo = Btn("🎥 Slow Motion")
+local fakelag = Btn("📶 Fake Lag")
+local xray = Btn("👁 XRAY")
+local noclip = Btn("🚪 NoClip")
+local infjump = Btn("🦘 Infinite Jump")
+local zoom = Btn("🔭 Zoom FOV")
+local esp = Btn("👀 ESP")
+
+-------------------------------------------------
+-- VARIABLES
+-------------------------------------------------
+
+local flying = false
+local flyConn
+local tpEnabled = false
+local mouse = player:GetMouse()
+
+local lagEnabled = false
+local noclipEnabled = false
+local infJumpEnabled = false
+local xrayEnabled = false
+local zoomEnabled = false
+local espEnabled = false
+
+-------------------------------------------------
+-- FLY
+-------------------------------------------------
+
+local function stopFly()
+	flying = false
+	if flyConn then flyConn:Disconnect() end
+	status.Text = "Fly OFF"
+end
+
+local function startFly()
+	local hum = getHum()
+	local root = getRoot()
+
+	flying = true
+
+	flyConn = RunService.RenderStepped:Connect(function()
+		local cam = workspace.CurrentCamera
+		local moveDir = hum.MoveDirection
+
+		local look = Vector3.new(cam.CFrame.LookVector.X,0,cam.CFrame.LookVector.Z)
+		local right = Vector3.new(cam.CFrame.RightVector.X,0,cam.CFrame.RightVector.Z)
+
+		local vel = (right * moveDir.X + look * moveDir.Z) * 70
+		root.AssemblyLinearVelocity = vel + Vector3.new(0,25,0)
+	end)
+
+	status.Text = "Fly ON"
+end
+
+-------------------------------------------------
+-- TP TOUCH
+-------------------------------------------------
+
+mouse.Button1Down:Connect(function()
+	if tpEnabled and mouse.Target then
+		getRoot().CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0,5,0))
+	end
+end)
+
+-------------------------------------------------
+-- FUNCIONES ORIGINALES
+-------------------------------------------------
+
+speed.MouseButton1Click:Connect(function()
+	saved.WalkSpeed = 35
+	applySaved()
+end)
+
+jump.MouseButton1Click:Connect(function()
+	saved.JumpPower = 120
+	applySaved()
+end)
+
+sprint.MouseButton1Click:Connect(function()
+	saved.WalkSpeed = 50
+	applySaved()
+end)
+
+fly.MouseButton1Click:Connect(function()
+	if flying then stopFly() else startFly() end
+end)
+
+heal.MouseButton1Click:Connect(function()
+	getHum().Health = getHum().MaxHealth
+end)
+
+reset.MouseButton1Click:Connect(function()
+	getHum().Health = 0
+end)
+
+gravity.MouseButton1Click:Connect(function()
+	saved.Gravity = 80
+	applySaved()
+end)
+
+normal.MouseButton1Click:Connect(function()
+	saved.WalkSpeed = 16
+	saved.JumpPower = 50
+	saved.Gravity = 196.2
+	applySaved()
+	stopFly()
+end)
+
+day.MouseButton1Click:Connect(function()
+	Lighting.ClockTime = 14
+end)
+
+night.MouseButton1Click:Connect(function()
+	Lighting.ClockTime = 0
+end)
+
+tpTouch.MouseButton1Click:Connect(function()
+	tpEnabled = not tpEnabled
+	status.Text = tpEnabled and "TP Touch ON" or "TP Touch OFF"
+end)
+
+tpFront.MouseButton1Click:Connect(function()
+	local root = getRoot()
+	root.CFrame = root.CFrame + root.CFrame.LookVector * 20
+end)
+
+tpSky.MouseButton1Click:Connect(function()
+	local root = getRoot()
+	root.CFrame = CFrame.new(root.Position.X,150,root.Position.Z)
+end)
+
+sit.MouseButton1Click:Connect(function()
+	getHum().Sit = true
+end)
+
+stand.MouseButton1Click:Connect(function()
+	getHum().Sit = false
+end)
+
+-------------------------------------------------
+-- NUEVAS FUNCIONES
+-------------------------------------------------
+
+slowmo.MouseButton1Click:Connect(function()
+	workspace.Gravity = 80
+	getHum().WalkSpeed = 8
+	status.Text = "Slow Motion ON"
+end)
+
+fakelag.MouseButton1Click:Connect(function()
+	lagEnabled = not lagEnabled
+	status.Text = lagEnabled and "Fake Lag ON" or "Fake Lag OFF"
+end)
+
+task.spawn(function()
+	while true do
+		task.wait(0.35)
+		if lagEnabled then
+			getRoot().Anchored = true
+			task.wait(0.25)
+			getRoot().Anchored = false
+		end
+	end
+end)
+
+xray.MouseButton1Click:Connect(function()
+	xrayEnabled = not xrayEnabled
+	for _,v in pairs(workspace:GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.LocalTransparencyModifier = xrayEnabled and 0.65 or 0
+		end
+	end
+	status.Text = xrayEnabled and "XRAY ON" or "XRAY OFF"
+end)
+
+noclip.MouseButton1Click:Connect(function()
+	noclipEnabled = not noclipEnabled
+	status.Text = noclipEnabled and "NoClip ON" or "NoClip OFF"
+end)
+
+RunService.Stepped:Connect(function()
+	if noclipEnabled then
+		for _,v in pairs(getChar():GetDescendants()) do
+			if v:IsA("BasePart") then
+				v.CanCollide = false
+			end
+		end
+	end
+end)
+
+infjump.MouseButton1Click:Connect(function()
+	infJumpEnabled = not infJumpEnabled
+	status.Text = infJumpEnabled and "Infinite Jump ON" or "Infinite Jump OFF"
+end)
+
+UIS.JumpRequest:Connect(function()
+	if infJumpEnabled then
+		getHum():ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end)
+
+zoom.MouseButton1Click:Connect(function()
+	zoomEnabled = not zoomEnabled
+	workspace.CurrentCamera.FieldOfView = zoomEnabled and 120 or 70
+	status.Text = zoomEnabled and "Zoom ON" or "Zoom OFF"
+end)
+
+esp.MouseButton1Click:Connect(function()
+	espEnabled = not espEnabled
+
+	for _,plr in pairs(game.Players:GetPlayers()) do
+		if plr ~= player and plr.Character then
+			local old = plr.Character:FindFirstChild("ESP")
+			if old then old:Destroy() end
+
+			if espEnabled then
+				local h = Instance.new("Highlight")
+				h.Name = "ESP"
+				h.FillTransparency = 0.4
+				h.Parent = plr.Character
+			end
+		end
+	end
+
+	status.Text = espEnabled and "ESP ON" or "ESP OFF"
+end)
+
+-------------------------------------------------
+-- ANTI AFK
+-------------------------------------------------
+
+player.Idled:Connect(function()
+	VirtualUser:CaptureController()
+	VirtualUser:ClickButton2(Vector2.new())
+end)
+
+-------------------------------------------------
+-- ABRIR/CERRAR
+-------------------------------------------------
+
+orb.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
+	orb.Text = main.Visible and "✕" or "✦"
+end)
+
+applySaved()-------------------------------------------------
+-- NUEVAS FUNCIONES PRO (MOVIL)
+-------------------------------------------------
+
+local hoverEnabled = false
+local dashCooldown = false
+local savedPosition = nil
+local climbing = false
+
+-- BOTONES NUEVOS
+
+local hover = Btn("🛑 Hover")
+local dash = Btn("⚡ Dash")
+local airdash = Btn("🌀 Air Dash")
+local walljump = Btn("🧱 Wall Jump")
+local wallclimb = Btn("🧗 Wall Climb")
+local savepos = Btn("💾 Save Pos")
+local loadpos = Btn("📍 Load Pos")
+local special = Btn("💥 Golpe Especial")
+
+-------------------------------------------------
+-- HOVER
+-------------------------------------------------
+
+hover.MouseButton1Click:Connect(function()
+	hoverEnabled = not hoverEnabled
+	status.Text = hoverEnabled and "Hover ON" or "Hover OFF"
+end)
+
+RunService.RenderStepped:Connect(function()
+	if hoverEnabled and flying then
+		getRoot().AssemblyLinearVelocity = Vector3.new(0,0,0)
+	end
+end)
+
+-------------------------------------------------
+-- DASH
+-------------------------------------------------
+
+local function doDash(power)
+	if dashCooldown then return end
+	dashCooldown = true
+
+	local root = getRoot()
+	local cam = workspace.CurrentCamera
+
+	local dir = cam.CFrame.LookVector
+	root.AssemblyLinearVelocity = dir * power + Vector3.new(0,10,0)
+
+	-- efecto visual
+	local p = Instance.new("Part")
+	p.Anchored = true
+	p.CanCollide = false
+	p.Size = Vector3.new(1,1,1)
+	p.Material = Enum.Material.Neon
+	p.Color = Color3.fromRGB(255,0,255)
+	p.CFrame = root.CFrame
+	p.Parent = workspace
+	game:GetService("Debris"):AddItem(p,0.3)
+
+	task.wait(0.5)
+	dashCooldown = false
+end
+
+dash.MouseButton1Click:Connect(function()
+	doDash(120)
+	status.Text = "Dash!"
+end)
+
+airdash.MouseButton1Click:Connect(function()
+	if getHum():GetState() == Enum.HumanoidStateType.Freefall then
+		doDash(150)
+		status.Text = "Air Dash!"
+	end
+end)
+
+-------------------------------------------------
+-- WALL JUMP
+-------------------------------------------------
+
+walljump.MouseButton1Click:Connect(function()
+	local root = getRoot()
+
+	local ray = Ray.new(root.Position, root.CFrame.LookVector * 3)
+	local hit = workspace:FindPartOnRay(ray, getChar())
+
+	if hit then
+		root.Velocity = Vector3.new(0,80,0) + (-root.CFrame.LookVector * 50)
+		status.Text = "Wall Jump!"
+	end
+end)
+
+-------------------------------------------------
+-- WALL CLIMB (BASICO)
+-------------------------------------------------
+
+wallclimb.MouseButton1Click:Connect(function()
+	climbing = not climbing
+	status.Text = climbing and "Wall Climb ON" or "Wall Climb OFF"
+end)
+
+RunService.RenderStepped:Connect(function()
+	if climbing then
+		local root = getRoot()
+		local ray = Ray.new(root.Position, root.CFrame.LookVector * 2)
+		local hit = workspace:FindPartOnRay(ray, getChar())
+
+		if hit then
+			root.Velocity = Vector3.new(0,20,0)
+		end
+	end
+end)
+
+-------------------------------------------------
+-- SAVE / LOAD POSITION
+-------------------------------------------------
+
+savepos.MouseButton1Click:Connect(function()
+	savedPosition = getRoot().CFrame
+	status.Text = "Posición guardada"
+end)
+
+loadpos.MouseButton1Click:Connect(function()
+	if savedPosition then
+		getRoot().CFrame = savedPosition
+		status.Text = "Teletransportado"
+	end
+end)
+
+-------------------------------------------------
+-- GOLPE ESPECIAL (IMPULSO)
+-------------------------------------------------
+
+special.MouseButton1Click:Connect(function()
+	local root = getRoot()
+	local cam = workspace.CurrentCamera
+
+	root.AssemblyLinearVelocity = cam.CFrame.LookVector * 180 + Vector3.new(0,30,0)
+
+	status.Text = "Golpe Especial!"
+
+	-- efecto
+	local effect = Instance.new("Explosion")
+	effect.Position = root.Position
+	effect.BlastPressure = 0
+	effect.BlastRadius = 6
+	effect.Parent = workspace
+end)-------------------------------------------------
+-- TELEKINESIS ULTRA (FUERZA BRUTA)
+-------------------------------------------------
+
+local telekinesisEnabled = false
+local selectedObject = nil
+local dragging = false
+local dragInput = nil
+
+local tkForce, tkGyro
+local launchBtn
+
+local telekinesis = Btn("🔮 Telekinesis PRO")
+
+-------------------------------------------------
+-- LIMPIAR
+-------------------------------------------------
+
+local function clearTK()
+	if selectedObject then
+		local h = selectedObject:FindFirstChild("TK_HIGHLIGHT")
+		if h then h:Destroy() end
+	end
+
+	if tkForce then tkForce:Destroy() end
+	if tkGyro then tkGyro:Destroy() end
+
+	selectedObject = nil
+	dragging = false
+end
+
+-------------------------------------------------
+-- LANZAR
+-------------------------------------------------
+
+local function createLaunchButton()
+	if launchBtn then return end
+
+	launchBtn = Instance.new("TextButton")
+	launchBtn.Parent = gui
+	launchBtn.Size = UDim2.new(0,120,0,50)
+	launchBtn.Position = UDim2.new(1,-140,1,-80)
+	launchBtn.Text = "🚀 Lanzar"
+	launchBtn.Font = Enum.Font.GothamBold
+	launchBtn.TextSize = 16
+	launchBtn.BackgroundColor3 = Color3.fromRGB(255,50,50)
+	launchBtn.TextColor3 = Color3.new(1,1,1)
+	Instance.new("UICorner",launchBtn)
+
+	launchBtn.MouseButton1Click:Connect(function()
+		if selectedObject and tkForce then
+			tkForce.Velocity = workspace.CurrentCamera.CFrame.LookVector * 300
+			status.Text = "Lanzado con fuerza!"
+			task.wait(0.2)
+			clearTK()
+		end
+	end)
+end
+
+-------------------------------------------------
+-- ACTIVAR
+-------------------------------------------------
+
+telekinesis.MouseButton1Click:Connect(function()
+	telekinesisEnabled = not telekinesisEnabled
+	status.Text = telekinesisEnabled and "Telekinesis PRO ON" or "Telekinesis OFF"
+
+	if not telekinesisEnabled then
+		clearTK()
+	end
+
+	createLaunchButton()
+	if launchBtn then
+		launchBtn.Visible = telekinesisEnabled
+	end
+end)
+
+-------------------------------------------------
+-- SELECCIONAR
+-------------------------------------------------
+
+UIS.InputBegan:Connect(function(input)
+	if not telekinesisEnabled then return end
+
+	if input.UserInputType == Enum.UserInputType.Touch
+	or input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+		local target = mouse.Target
+		if not target then return end
+		if not target:IsA("BasePart") then return end
+		if target.Anchored then return end
+
+		clearTK()
+		selectedObject = target
+		dragging = true
+		dragInput = input
+
+		-- Highlight
+		local h = Instance.new("Highlight")
+		h.Name = "TK_HIGHLIGHT"
+		h.FillTransparency = 0.5
+		h.OutlineColor = Color3.fromRGB(255,0,255)
+		h.Parent = target
+
+		-- 🔥 INTENTO DE CONTROL (network)
+		pcall(function()
+			target:SetNetworkOwner(player)
+		end)
+
+		-- 🔥 FUERZA BRUTA
+		tkForce = Instance.new("BodyVelocity")
+		tkForce.MaxForce = Vector3.new(1e9,1e9,1e9)
+		tkForce.Velocity = Vector3.new(0,0,0)
+		tkForce.Parent = target
+
+		tkGyro = Instance.new("BodyGyro")
+		tkGyro.MaxTorque = Vector3.new(1e9,1e9,1e9)
+		tkGyro.CFrame = target.CFrame
+		tkGyro.Parent = target
+
+		status.Text = "Objeto dominado 😈"
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input == dragInput then
+		dragging = false
+	end
+end)
+
+-------------------------------------------------
+-- CONTROL ULTRA
+-------------------------------------------------
+
+RunService.RenderStepped:Connect(function()
+	if telekinesisEnabled and selectedObject and dragging then
+		local cam = workspace.CurrentCamera
+		local root = getRoot()
+
+		-- Posición objetivo (delante tuyo)
+		local targetPos =
+			root.Position +
+			cam.CFrame.LookVector * 12 +
+			Vector3.new(0,3,0)
+
+		-- 🔥 FUERZA + AJUSTE
+		if tkForce then
+			local dir = (targetPos - selectedObject.Position)
+			tkForce.Velocity = dir * 10
+		end
+
+		if tkGyro then
+			tkGyro.CFrame = cam.CFrame
+		end
+
+		-- 🔥 REFUERZO CON CFrame (por si falla física)
+		selectedObject.CFrame = selectedObject.CFrame:Lerp(
+			CFrame.new(targetPos),
+			0.35
+		)
+	end
+end)-------------------------------------------------
+-- BARRERA COMPLETA (UN SOLO SCRIPT)
+-------------------------------------------------
+
+local barrierEnabled = false
+local barriers = {}
+
+local barrierBtn = Btn("🧱 Barrera Total")
+
+-------------------------------------------------
+-- CREAR BARRERA
+-------------------------------------------------
+
+local function createBarrier()
+	local cam = workspace.CurrentCamera
+	local root = getRoot()
+
+	local distance = 12
+	local pos = root.Position + cam.CFrame.LookVector * distance
+
+	local part = Instance.new("Part")
+	part.Size = Vector3.new(10,10,1)
+	part.Anchored = true
+	part.CanCollide = true
+	part.Transparency = 0.4
+	part.Material = Enum.Material.ForceField
+	part.Color = Color3.fromRGB(170,0,255)
+	part.Name = "AstraBarrier"
+	part.Parent = workspace
+
+	part.CFrame = CFrame.new(pos, pos + cam.CFrame.LookVector)
+
+	table.insert(barriers, part)
+end
+
+-------------------------------------------------
+-- ACTIVAR / DESACTIVAR
+-------------------------------------------------
+
+barrierBtn.MouseButton1Click:Connect(function()
+	barrierEnabled = not barrierEnabled
+	status.Text = barrierEnabled and "Barrera ON" or "Barrera OFF"
+end)
+
+-------------------------------------------------
+-- CREAR CON TOQUE
+-------------------------------------------------
+
+UIS.InputBegan:Connect(function(input)
+	if not barrierEnabled then return end
+
+	if input.UserInputType == Enum.UserInputType.Touch
+	or input.UserInputType == Enum.UserInputType.MouseButton1 then
+		
+		createBarrier()
+		status.Text = "Barrera creada"
+	end
+end)
+
+-------------------------------------------------
+-- BLOQUEO SIMULADO (EXPULSION)
+-------------------------------------------------
+
+RunService.RenderStepped:Connect(function()
+	for _,barrier in pairs(barriers) do
+		if barrier then
+			for _,plr in pairs(game.Players:GetPlayers()) do
+				if plr ~= player and plr.Character then
+					local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+					local hum = plr.Character:FindFirstChild("Humanoid")
+
+					if hrp and hum then
+						local dist = (hrp.Position - barrier.Position).Magnitude
+
+						if dist < 6 then
+							local dir = (hrp.Position - barrier.Position).Unit
+
+							-- expulsión fuerte tipo choque
+							local bv = Instance.new("BodyVelocity")
+							bv.MaxForce = Vector3.new(1e9,1e9,1e9)
+							bv.Velocity = dir * 200 + Vector3.new(0,80,0)
+							bv.Parent = hrp
+
+							game:GetService("Debris"):AddItem(bv, 0.2)
+
+							hum:ChangeState(Enum.HumanoidStateType.Physics)
+						end
+					end
+				end
+			end
+		end
+	end
+end)-------------------------------------------------
+-- MOVIMIENTO AVANZADO PRO
+-------------------------------------------------
+
+-- estados
+local grappleActive = false
+local tornadoCooldown = false
+local freezeActive = false
+local invisEnabled = false
+
+-- botones
+local grappleBtn = Btn("🧲 Gancho")
+local tornadoBtn = Btn("🌪 Tornado Jump")
+local freezeBtn = Btn("❄️ Freeze Drop")
+local invisBtn = Btn("👻 Invisibilidad")
+
+-------------------------------------------------
+-- 🧲 GANCHO (GRAPPLING HOOK)
+-------------------------------------------------
+
+grappleBtn.MouseButton1Click:Connect(function()
+	local mouse = player:GetMouse()
+	if not mouse.Target then return end
+
+	local root = getRoot()
+	local targetPos = mouse.Hit.Position
+
+	local bv = Instance.new("BodyVelocity")
+	bv.MaxForce = Vector3.new(1e9,1e9,1e9)
+	bv.Parent = root
+
+	grappleActive = true
+
+	task.spawn(function()
+		while grappleActive do
+			local dir = (targetPos - root.Position).Unit
+			bv.Velocity = dir * 120
+			task.wait()
+		end
+	end)
+
+	status.Text = "Gancho!"
+
+	task.wait(0.5)
+	grappleActive = false
+	bv:Destroy()
+end)
+
+-------------------------------------------------
+-- 🌪️ TORNADO JUMP
+-------------------------------------------------
+
+tornadoBtn.MouseButton1Click:Connect(function()
+	if tornadoCooldown then return end
+	tornadoCooldown = true
+
+	local root = getRoot()
+
+	for i = 1,25 do
+		root.Velocity = Vector3.new(
+			math.random(-30,30),
+			80,
+			math.random(-30,30)
+		)
+		task.wait(0.05)
+	end
+
+	status.Text = "Tornado!"
+
+	task.wait(2)
+	tornadoCooldown = false
+end)
+
+-------------------------------------------------
+-- ❄️ FREEZE + CAIDA FUERTE
+-------------------------------------------------
+
+freezeBtn.MouseButton1Click:Connect(function()
+	if freezeActive then return end
+	freezeActive = true
+
+	local root = getRoot()
+
+	-- congelar
+	root.Anchored = true
+	status.Text = "Freeze..."
+
+	task.wait(1.5)
+
+	-- soltar con caída fuerte
+	root.Anchored = false
+	root.Velocity = Vector3.new(0,-200,0)
+
+	status.Text = "Drop!"
+
+	task.wait(1)
+	freezeActive = false
+end)
+
+-------------------------------------------------
+-- 👻 INVISIBILIDAD
+-------------------------------------------------
+
+invisBtn.MouseButton1Click:Connect(function()
+	invisEnabled = not invisEnabled
+
+	for _,v in pairs(getChar():GetDescendants()) do
+		if v:IsA("BasePart") then
+			v.LocalTransparencyModifier = invisEnabled and 1 or 0
+		end
+	end
+
+	status.Text = invisEnabled and "Invisible ON" or "Invisible OFF"
+end)
